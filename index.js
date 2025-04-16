@@ -17,6 +17,7 @@ class Player {
         }
 
         this.rotation = 0;
+        this.opacity = 1;
 
 
         const image = new Image();
@@ -42,6 +43,7 @@ class Player {
         // c.fillRect(this.position.x, this.position.y, this.width, this.height);
 
         c.save();
+        c.globalAlpha = this.opacity; // Use the corrected "opacity"
         c.translate(player.position.x + player.width / 2,
                     player.position.y + player.height / 2);
 
@@ -290,6 +292,10 @@ const keys = {
 let frames = 0;
  
 let randomInterval = Math.floor(Math.random() * 1000 + 1000);
+let game = {
+    over: false,
+    active: true
+}
 
 
 // create a Background with particles (stars)
@@ -303,7 +309,7 @@ for (let i = 0; i < 100; i++) {
         },
         velocity: {
             x: 0,
-            y: 1
+            y: 0.5
         },
         radius: Math.random() * 2,
         color:'white'
@@ -335,6 +341,8 @@ function createParticles({object, color, fades}) {
 }
 
 function animate() {
+
+    if (!game.active) return;
     requestAnimationFrame(animate);
     c.fillStyle = 'black';
     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -342,6 +350,16 @@ function animate() {
     player.update();
 
     particles.forEach((particle, index) => {
+            if (particle.position.y - particle.radius >= canvas.height) {
+                particle.position.x = Math.random() * canvas.width;
+                particle.position.y = -particle.radius;
+
+
+            }
+
+
+
+
         if (particle.opacity <= 0) {
             setTimeout(() => {
                 particles.splice(index, 1); // Use "index" to remove the correct particle
@@ -377,11 +395,21 @@ function animate() {
             invaderProjectile.position.x + invaderProjectile.width >= player.position.x &&
             invaderProjectile.position.x <= player.position.x + player.width
         ) {
+
+            // console.log('you lose');
+
             setTimeout(() => {
                 InvaderProjectiles.splice(index, 1);
+                player.opacity = 0;
+                game.over = true;
             }, 0);
 
-            console.log('you lose');
+            setTimeout(() => {
+                game.active = false;
+            }, 2000);
+
+
+            // create particles
             createParticles({
                 object: player,
                 color: 'white',
@@ -493,6 +521,8 @@ animate();
 // Event Listeners to move the player
 
 addEventListener('keydown', ({ key }) => {
+
+    if (game.over) return;
     switch (key) {
         case 'ArrowLeft': 
             keys.left.pressed = true;
