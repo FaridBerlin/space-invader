@@ -3,6 +3,8 @@ const canvas = document.querySelector('canvas');
 
 const c = canvas.getContext('2d');
 
+let projectileAudio = new Audio('../Audio/laser.wav');
+
 
 canvas.width = 1000;
 canvas.height = 1000;
@@ -560,7 +562,10 @@ addEventListener('keydown', ({ key }) => {
             keys.right.pressed = true;
             break;
         case ' ':
-            // console.log('space');
+            // Play projectile audio
+            projectileAudio.currentTime = 0; // Reset audio to start
+            projectileAudio.play();
+
             projectiles.push(new Projectile({
                 position: {
                     x: player.position.x + player.width / 2,
