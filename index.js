@@ -81,14 +81,35 @@ class Projectile {
         this.velocity = velocity;
 
         this.radius = 6;
+        this.width = 13;
+        this.height = 20;
     }
 
+// draw() {
+    //     c.beginPath();
+    //     c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    //     c.fillStyle = 'red';
+    //     c.fill();
+    //     c.closePath();
+    // }
     draw() {
-        c.beginPath();
-        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+        // Draw the rocket
         c.fillStyle = 'red';
-        c.fill();
+        c.beginPath();
+        c.moveTo(this.position.x, this.position.y); // Top point of the triangle
+        c.lineTo(this.position.x - this.width / 2, this.position.y + this.height); // Bottom-left point
+        c.lineTo(this.position.x + this.width / 2, this.position.y + this.height); // Bottom-right point
         c.closePath();
+        c.fill();
+
+        // Draw the flame
+        c.fillStyle = 'orange';
+        c.beginPath();
+        c.moveTo(this.position.x, this.position.y + this.height); // Top of the flame
+        c.lineTo(this.position.x - this.width / 4, this.position.y + this.height + 10); // Bottom-left of the flame
+        c.lineTo(this.position.x + this.width / 4, this.position.y + this.height + 10); // Bottom-right of the flame
+        c.closePath();
+        c.fill();
     }
 
     update() {
@@ -96,11 +117,7 @@ class Projectile {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
     }
-
-
-
 }
-
 
 // class Particle
 class Particle {
@@ -126,6 +143,11 @@ class Particle {
         c.restore();
     }
 
+
+
+    
+
+
     update() {
         this.draw();
         this.position.x += this.velocity.x;
@@ -141,14 +163,18 @@ class InvaderProjectile {
         this.position = position;
         this.velocity = velocity;
 
-        this.width = 3;
-        this.height = 10;
+        this.width = 9;
+        this.height = 15;
     }
 
     draw() {
-        c.fillStyle = 'white';
-        c.fillRect(this.position.x, this.position.y, this.width, this.height);
-        
+        c.fillStyle = 'yellow';
+        c.beginPath();
+        c.moveTo(this.position.x, this.position.y + this.height); // Top point of the triangle
+        c.lineTo(this.position.x - this.width / 2, this.position.y); // Bottom-left point
+        c.lineTo(this.position.x + this.width / 2, this.position.y); // Bottom-right point
+        c.closePath();
+        c.fill();
     }
 
     update() {
