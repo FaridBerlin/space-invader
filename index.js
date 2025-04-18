@@ -7,6 +7,7 @@ let projectileAudio = new Audio('../Audio/laser.wav');
 
 let invaderProjectileAudio = new Audio('../Audio/laser2.wav');
 
+let playerExplosionAudio = new Audio('../Audio/explosion.wav');
 
 canvas.width = 1000;
 canvas.height = 1000;
@@ -423,6 +424,20 @@ function animate() {
         }
     });
 
+    // InvaderProjectiles.forEach((InvaderProjectile) => {
+    //     InvaderProjectile.update();
+    // })
+
+    // projectiles.forEach((projectile, index) => {
+    //     if (projectile.position.y + projectile.radius <= canvas.height) {
+    //         projectile.update();
+    //     } else {
+    //         setTimeout(() => {
+    //             projectiles.splice(index, 1);
+    //         }, 0);
+    //     }
+    // });
+
     InvaderProjectiles.forEach((invaderProjectile, index) => {
         invaderProjectile.update();
 
@@ -442,6 +457,10 @@ function animate() {
             setTimeout(() => {
                 game.active = false;
             }, 2000);
+
+            // Play player explosion audio
+            playerExplosionAudio.currentTime = 0; // Reset audio to start
+            playerExplosionAudio.play();
 
             // Create particles for player explosion
             createParticles({
