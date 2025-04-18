@@ -1,4 +1,6 @@
+const scoreEl = document.querySelector('#scoreEl');
 const canvas = document.querySelector('canvas');
+
 const c = canvas.getContext('2d');
 
 
@@ -296,6 +298,8 @@ let game = {
     over: false,
     active: true
 }
+// score
+let score = 0;
 
 
 // create a Background with particles (stars)
@@ -457,6 +461,10 @@ function animate() {
                         );
                         // remove invader and projectile
                         if (invaderFound && projectileFound) {
+                            // score
+                            score += 100;
+                            scoreEl.innerHTML = score;
+
                             // create particles
                           createParticles({
                             object: invader,
