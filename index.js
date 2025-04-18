@@ -392,16 +392,13 @@ function animate() {
     InvaderProjectiles.forEach((invaderProjectile, index) => {
         invaderProjectile.update();
 
-// if Projectile hits player
-
+        // Accurate collision detection for player and invaderProjectile
         if (
-            invaderProjectile.position.y + invaderProjectile.height >= player.position.y &&
-            invaderProjectile.position.x + invaderProjectile.width >= player.position.x &&
-            invaderProjectile.position.x <= player.position.x + player.width
+            invaderProjectile.position.y + invaderProjectile.height >= player.position.y && // Bottom of projectile touches top of player
+            invaderProjectile.position.y <= player.position.y + player.height && // Top of projectile touches bottom of player
+            invaderProjectile.position.x + invaderProjectile.width >= player.position.x && // Right of projectile touches left of player
+            invaderProjectile.position.x <= player.position.x + player.width // Left of projectile touches right of player
         ) {
-
-            // console.log('you lose');
-
             setTimeout(() => {
                 InvaderProjectiles.splice(index, 1);
                 player.opacity = 0;
@@ -412,13 +409,11 @@ function animate() {
                 game.active = false;
             }, 2000);
 
-
-            // create particles
+            // Create particles for player explosion
             createParticles({
                 object: player,
                 color: 'white',
                 fades: true
-                
             });
         }
     });
