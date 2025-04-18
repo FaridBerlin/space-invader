@@ -5,6 +5,8 @@ const c = canvas.getContext('2d');
 
 let projectileAudio = new Audio('../Audio/laser.wav');
 
+let invaderProjectileAudio = new Audio('../Audio/laser2.wav');
+
 
 canvas.width = 1000;
 canvas.height = 1000;
@@ -238,6 +240,10 @@ class Invader {
     }
 
     shoot(InvaderProjectiles) {
+        // Play invader projectile audio
+        invaderProjectileAudio.currentTime = 0; // Reset audio to start
+        invaderProjectileAudio.play();
+
         InvaderProjectiles.push(new InvaderProjectile({
             position: {
                 x: this.position.x + this.width / 2,
