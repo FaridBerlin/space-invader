@@ -7,7 +7,7 @@ let projectileAudio = new Audio('../Audio/laser.wav');
 
 let invaderProjectileAudio = new Audio('../Audio/laser2.wav');
 
-let playerExplosionAudio = new Audio('../Audio/explosion.wav');
+let playerExplosionAudio = new Audio('../Audio/laser3.wav');
 
 canvas.width = 1000;
 canvas.height = 1000;
