@@ -1,19 +1,27 @@
 body{
     margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    
+}
+.container{
+    position: relative;
+    
+    
 }
 p{
-    position: fixed;
+    position: absolute;
     z-index: 10;
-
+    
 
     font-family: sans-serif,Arial;
     font-size: 2rem;
     color: white;
     top: 10px;
     left: 10px;
-
 }
 p span{
     padding: 0.5rem;
 }
-    

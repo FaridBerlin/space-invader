@@ -4,8 +4,8 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.width = 1000;
+canvas.height = 1000;
 
 // class Player
 
