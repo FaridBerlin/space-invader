@@ -31,7 +31,7 @@ class Player {
         image.src = './img/spaceship.png';
 
         image.onload = () => {
-            const scale = 0.3;
+            const scale = 0.25;
             this.image = image;
             this.width = image.width * scale;
             this.height = image.height * scale;
@@ -202,8 +202,10 @@ class Invader {
         const image = new Image();
         image.src = './img/invader.png';
 
+    
+
         image.onload = () => {
-            const scale = 1;
+            const scale = 1.3;
             this.image = image;
             this.width = image.width * scale;
             this.height = image.height * scale;
@@ -252,7 +254,7 @@ class Invader {
             },
             velocity: {
                 x: 0,
-                y: 5
+                y: 1
             }
         }));
     }
@@ -267,7 +269,7 @@ class Grid {
             y: 0
         }
         this.velocity = {
-            x: 3,
+            x: 2,
             y: 0
         }
         this.invaders = [];
@@ -328,7 +330,7 @@ const keys = {
 
 let frames = 0;
  
-let randomInterval = Math.floor(Math.random() * 1000 + 1000);
+let randomInterval = Math.floor(Math.random() * 500 + 500);
 let game = {
     over: false,
     active: true
@@ -424,19 +426,7 @@ function animate() {
         }
     });
 
-    // InvaderProjectiles.forEach((InvaderProjectile) => {
-    //     InvaderProjectile.update();
-    // })
-
-    // projectiles.forEach((projectile, index) => {
-    //     if (projectile.position.y + projectile.radius <= canvas.height) {
-    //         projectile.update();
-    //     } else {
-    //         setTimeout(() => {
-    //             projectiles.splice(index, 1);
-    //         }, 0);
-    //     }
-    // });
+    
 
     InvaderProjectiles.forEach((invaderProjectile, index) => {
         invaderProjectile.update();
@@ -475,7 +465,7 @@ function animate() {
         grid.update()
 
     // spawning invader projectiles
-        if (frames % 100 === 0 && grid.invaders.length > 0){
+          if (frames % 500 === 0 && grid.invaders.length > 0) { // Further increased interval for invader shooting
           grid.invaders[Math.floor(Math.random() * 
             grid.invaders.length)].shoot(InvaderProjectiles);  
         }
@@ -563,7 +553,7 @@ function animate() {
 
     if (frames % randomInterval === 0) {
         grids.push(new Grid())
-        randomInterval = Math.floor(Math.random() * 1000 + 1000)
+        randomInterval = Math.floor(Math.random() * 500 + 500)
         frames = 0;
         console.log(randomInterval);
     }
@@ -576,8 +566,10 @@ animate();
 
 // Event Listeners to move the player
 
-addEventListener('keydown', ({ key }) => {
+let shootingInterval;
+let isShooting = false; // Flag to track if space key is being held
 
+addEventListener('keydown', ({ key }) => {
     if (game.over) return;
     switch (key) {
         case 'ArrowLeft': 
@@ -587,23 +579,47 @@ addEventListener('keydown', ({ key }) => {
             keys.right.pressed = true;
             break;
         case ' ':
-            // Play projectile audio
-            projectileAudio.currentTime = 0; // Reset audio to start
-            projectileAudio.play();
+            if (!isShooting) {
+                isShooting = true; // Set the flag to true
 
-            projectiles.push(new Projectile({
-                position: {
-                    x: player.position.x + player.width / 2,
-                    y: player.position.y
-                },
-                velocity: {
-                    x: 0,
-                    y: -10
+                // Single shot when space is pressed
+                projectileAudio.currentTime = 0; // Reset audio to start
+                projectileAudio.play();
+
+                projectiles.push(new Projectile({
+                    position: {
+                        x: player.position.x + player.width / 2,
+                        y: player.position.y
+                    },
+                    velocity: {
+                        x: 0,
+                        y: -10
+                    }
+                }));
+
+                // Start shooting continuously
+                if (!shootingInterval) {
+                    shootingInterval = setInterval(() => {
+                        projectileAudio.currentTime = 0; // Reset audio to start
+                        projectileAudio.play();
+
+                        projectiles.push(new Projectile({
+                            position: {
+                                x: player.position.x + player.width / 2,
+                                y: player.position.y
+                            },
+                            velocity: {
+                                x: 0,
+                                y: -10
+                            }
+                        }));
+                    }, 200); // Adjust the interval as needed
                 }
-            }));
+            }
             break;
     }
 });
+
 addEventListener('keyup', ({ key }) => {
     switch (key) {
         case 'ArrowLeft': 
@@ -613,7 +629,10 @@ addEventListener('keyup', ({ key }) => {
             keys.right.pressed = false;
             break;
         case ' ':
-            console.log('space');
+            // Stop shooting when space is released
+            clearInterval(shootingInterval);
+            shootingInterval = null;
+            isShooting = false; // Reset the flag
             break;
     }
 });
