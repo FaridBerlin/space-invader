@@ -129,20 +129,23 @@ class Projectile {
 
 // class Particle
 class Particle {
-    constructor({ position, velocity, radius, color, fades }) {
+    constructor({ position, velocity, radius, color, fades, glow }) {
         this.position = position;
         this.velocity = velocity;
         this.radius = radius;
         this.color = color;
         this.opacity = 1; // Fixed typo from "opactity" to "opacity"
         this.fades = fades;
-
-    
+        this.glow = glow || false;
     }
 
     draw() {
         c.save();
         c.globalAlpha = this.opacity; // Use the corrected "opacity"
+        if (this.glow) {
+            c.shadowColor = this.color;
+            c.shadowBlur = 25;
+        }
         c.beginPath();
         c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
         c.fillStyle = this.color;
@@ -150,11 +153,6 @@ class Particle {
         c.closePath();
         c.restore();
     }
-
-
-
-    
-
 
     update() {
         this.draw();
@@ -400,23 +398,31 @@ let score = 0;
 
 // function createParticles
 
-function createParticles({object, color, fades}) {
-    for (let i = 0; i < 15; i++) {
+function createParticles({object, color, fades, glow, count = 15, maxRadius = 3}) {
+    let x, y;
+    if (object.width && object.height) {
+        x = object.position.x + object.width / 2;
+        y = object.position.y + object.height / 2;
+    } else if (object.radius) {
+        x = object.position.x;
+        y = object.position.y;
+    } else {
+        x = object.position.x;
+        y = object.position.y;
+    }
+    for (let i = 0; i < count; i++) {
         particles.push(new Particle({
-            position: {
-                x: object.position.x + object.width / 2,
-                y: object.position.y + object.height / 2
-            },
+            position: { x, y },
             velocity: {
-                x: (Math.random() - 0.5) * 2,
-                y: (Math.random() - 0.5) * 2
+                x: (Math.random() - 0.5) * 2.5,
+                y: (Math.random() - 0.5) * 2.5
             },
-            radius: Math.random() * 3,
-            color:color || '#BAA0DE',
-            fades: fades 
+            radius: Math.random() * maxRadius + 2,
+            color: color || '#BAA0DE',
+            fades: fades,
+            glow: glow || false
         }))
     }
-    
 }
 
 // function createBigExplosion
@@ -629,10 +635,13 @@ function animate() {
             const dy = bomb.position.y - projectile.position.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < bomb.radius + projectile.radius) {
-                // Bomb hit by projectile: explode
-                createBigExplosion({ object: bomb, color: 'orange' });
+                // Bomb hit by projectile: big invader-like explosion with glow
+                createParticles({ object: bomb, color: 'orange', fades: true, glow: true, count: 40, maxRadius: 10 });
                 playerExplosionAudio.currentTime = 0;
                 playerExplosionAudio.play();
+                // Add 500 points to score
+                score += 500;
+                scoreEl.innerHTML = score;
                 bombs.splice(bombIndex, 1);
                 projectiles.splice(projIndex, 1);
             }
