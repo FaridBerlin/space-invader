@@ -1,5 +1,7 @@
 const scoreEl = document.querySelector('#scoreEl');
 const canvas = document.querySelector('canvas');
+const startButton = document.querySelector('#startButton');
+const gameOverEl = document.querySelector('#gameOver');
 
 const c = canvas.getContext('2d');
 
@@ -12,8 +14,9 @@ let playerExplosionAudio = new Audio('../Audio/laser3.wav');
 canvas.width = 1000;
 canvas.height = 1000;
 
-// class Player
 
+
+// **!Player**
 class Player {
 
     constructor() {
@@ -311,9 +314,23 @@ const projectiles = [];
 const grids = [];
 const InvaderProjectiles = [];
 const particles = [];
+const backgroundParticles = [];
 
-
-
+// Initialize background particles
+for (let i = 0; i < 100; i++) {
+    backgroundParticles.push(new Particle({
+        position: {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height
+        },
+        velocity: {
+            x: 0,
+            y: 0.5
+        },
+        radius: Math.random() * 2,
+        color: 'white'
+    }));
+}
 
 const keys = {
     right: {
@@ -333,32 +350,10 @@ let frames = 0;
 let randomInterval = Math.floor(Math.random() * 500 + 500);
 let game = {
     over: false,
-    active: true
-}
+    active: false // Set to false initially
+};
 // score
 let score = 0;
-
-
-// create a Background with particles (stars)
-
-for (let i = 0; i < 100; i++) {
-    particles.push(new Particle({
-        position: {
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height
-            
-        },
-        velocity: {
-            x: 0,
-            y: 0.5
-        },
-        radius: Math.random() * 2,
-        color:'white'
-    }))
-}
-
-
-
 
 // function createParticles
 
@@ -381,12 +376,42 @@ function createParticles({object, color, fades}) {
     
 }
 
+// function createBigExplosion
+
+function createBigExplosion({ object, color }) {
+    console.log('Creating big explosion at:', object.position);
+    for (let i = 0; i < 50; i++) {
+        particles.push(new Particle({
+            position: {
+                x: object.position.x + object.width / 2,
+                y: object.position.y + object.height / 2
+            },
+            velocity: {
+                x: (Math.random() - 0.5) * 6,
+                y: (Math.random() - 0.5) * 6
+            },
+            radius: Math.random() * 8 + 2, // Larger particles for a big explosion
+            color: color || 'orange',
+            fades: true
+        }));
+    }
+}
+
 function animate() {
 
     if (!game.active) return;
     requestAnimationFrame(animate);
     c.fillStyle = 'black';
     c.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Update and draw background particles
+    backgroundParticles.forEach((particle) => {
+        if (particle.position.y - particle.radius >= canvas.height) {
+            particle.position.x = Math.random() * canvas.width;
+            particle.position.y = -particle.radius;
+        }
+        particle.update();
+    });
     
     player.update();
 
@@ -433,31 +458,40 @@ function animate() {
 
         // Accurate collision detection for player and invaderProjectile
         if (
-            invaderProjectile.position.y + invaderProjectile.height >= player.position.y && // Bottom of projectile touches top of player
-            invaderProjectile.position.y <= player.position.y + player.height && // Top of projectile touches bottom of player
-            invaderProjectile.position.x + invaderProjectile.width >= player.position.x && // Right of projectile touches left of player
-            invaderProjectile.position.x <= player.position.x + player.width // Left of projectile touches right of player
+            invaderProjectile.position.y + invaderProjectile.height >= player.position.y &&
+            invaderProjectile.position.y <= player.position.y + player.height &&
+            invaderProjectile.position.x + invaderProjectile.width >= player.position.x &&
+            invaderProjectile.position.x <= player.position.x + player.width
         ) {
+            console.log('Player hit by invader projectile');
             setTimeout(() => {
+                // Remove the projectile
                 InvaderProjectiles.splice(index, 1);
+
+                // Trigger big explosion
+                createBigExplosion({
+                    object: player,
+                    color: 'red'
+                });
+                
+                // Make the player disappear
                 player.opacity = 0;
-                game.over = true;
+
+                // Mark the game as over
+
+                // **!here was the problem the player did not disapeare**
+                // game.over = true;
+                // game.active = false;
+
+                // Play explosion sound
+                playerExplosionAudio.currentTime = 0;
+                playerExplosionAudio.play();
+
+                // Display game over and start button after delay
+                setTimeout(() => {
+                    endGame();
+                }, 2000);
             }, 0);
-
-            setTimeout(() => {
-                game.active = false;
-            }, 2000);
-
-            // Play player explosion audio
-            playerExplosionAudio.currentTime = 0; // Reset audio to start
-            playerExplosionAudio.play();
-
-            // Create particles for player explosion
-            createParticles({
-                object: player,
-                color: 'white',
-                fades: true
-            });
         }
     });
 
@@ -563,6 +597,49 @@ function animate() {
 }
 animate();
 
+// Function to start the game
+function startGame() {
+    if (game.over) {
+        // Reset game state
+        game.over = false;
+        game.active = false;
+        player.opacity = 1; // Reset player opacity
+        grids.length = 0;
+        projectiles.length = 0;
+        InvaderProjectiles.length = 0;
+        particles.length = 0; // Clear particles only when restarting
+
+        // Display start button and hide game over message
+        gameOverEl.style.display = 'none';
+        startButton.style.display = 'block';
+    } else {
+        // Start the game
+        game.active = true;
+        score = 0;
+        scoreEl.innerHTML = score;
+        player.opacity = 1;
+        grids.length = 0;
+        projectiles.length = 0;
+        InvaderProjectiles.length = 0;
+
+        // Hide start button and game over display
+        startButton.style.display = 'none';
+        gameOverEl.style.display = 'none';
+
+        animate();
+    }
+}
+
+function endGame() {
+    game.active = false;
+    game.over = true; // Ensure the game is marked as over
+
+    // Delay the display of Game Over message and Start button
+    setTimeout(() => {
+        gameOverEl.style.display = 'block';
+        startButton.style.display = 'block';
+    }, 2000); // 2-second delay
+}
 
 // Event Listeners to move the player
 
@@ -636,6 +713,9 @@ addEventListener('keyup', ({ key }) => {
             break;
     }
 });
+
+// Add event listener to start button
+startButton.addEventListener('click', startGame);
 
 
 

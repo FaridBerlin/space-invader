@@ -264,6 +264,46 @@ class Invader {
 
 }
 
+// Bomb class
+class Bomb {
+    constructor({ position, velocity }) {
+        this.position = position;
+        this.velocity = velocity;
+        this.radius = 31;
+    }
+
+    draw() {
+        // Draw main bomb body
+        c.save();
+        c.beginPath();
+        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+        c.fillStyle = 'orange';
+        c.fill();
+        c.closePath();
+        // Draw bomb fuse
+        c.beginPath();
+        c.moveTo(this.position.x, this.position.y - this.radius);
+        c.lineTo(this.position.x, this.position.y - this.radius - 10);
+        c.strokeStyle = 'white';
+        c.lineWidth = 3;
+        c.stroke();
+        c.closePath();
+        // Draw fuse spark
+        c.beginPath();
+        c.arc(this.position.x, this.position.y - this.radius - 12, 3, 0, Math.PI * 2);
+        c.fillStyle = 'red';
+        c.fill();
+        c.closePath();
+        c.restore();
+    }
+
+    update() {
+        this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+    }
+}
+
 //  class Grid for the invaders
 class Grid {
     constructor() {
@@ -309,12 +349,15 @@ class Grid {
     }
 }
 
+//**!Enemy Class Bomb */
+
 const player = new Player();
 const projectiles = [];
 const grids = [];
 const InvaderProjectiles = [];
 const particles = [];
 const backgroundParticles = [];
+const bombs = []; // Bombs array to hold all active bombs
 
 // Initialize background particles
 for (let i = 0; i < 100; i++) {
@@ -568,6 +611,51 @@ function animate() {
     
     });
 
+    // Update and draw bombs
+    bombs.forEach((bomb, bombIndex) => {
+        bomb.update();
+        // Remove bomb if it goes off screen
+        if (
+            bomb.position.x + bomb.radius < 0 ||
+            bomb.position.y - bomb.radius > canvas.height
+        ) {
+            bombs.splice(bombIndex, 1);
+            return;
+        }
+
+        // Check collision with player projectiles
+        projectiles.forEach((projectile, projIndex) => {
+            const dx = bomb.position.x - projectile.position.x;
+            const dy = bomb.position.y - projectile.position.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < bomb.radius + projectile.radius) {
+                // Bomb hit by projectile: explode
+                createBigExplosion({ object: bomb, color: 'orange' });
+                playerExplosionAudio.currentTime = 0;
+                playerExplosionAudio.play();
+                bombs.splice(bombIndex, 1);
+                projectiles.splice(projIndex, 1);
+            }
+        });
+
+        // Check collision with player
+        if (player.opacity > 0 && player.position && player.width && player.height) {
+            const px = player.position.x + player.width / 2;
+            const py = player.position.y + player.height / 2;
+            const dx = bomb.position.x - px;
+            const dy = bomb.position.y - py;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < bomb.radius + Math.max(player.width, player.height) / 2) {
+                // Bomb hit player: player explodes and loses
+                createBigExplosion({ object: player, color: 'red' });
+                player.opacity = 0;
+                playerExplosionAudio.currentTime = 0;
+                playerExplosionAudio.play();
+                setTimeout(() => { endGame(); }, 1000);
+            }
+        }
+    });
+
     if (keys.left.pressed && player.position.x >= 0){
         player.velocity.x = -9;
         player.rotation = -0.3;
@@ -592,6 +680,13 @@ function animate() {
         console.log(randomInterval);
     }
 
+    // Spawn a new bomb every 300 frames (adjust as needed)
+    if (frames % 300 === 0) {
+        bombs.push(new Bomb({
+            position: { x: Math.random() * (canvas.width - 60) + 30, y: 0 }, // random x, top of canvas
+            velocity: { x: (Math.random() - 0.5) * 2, y: 4 } // mostly down, slight x variation
+        }));
+    }
 
     frames++;
 }
