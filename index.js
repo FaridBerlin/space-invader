@@ -6,15 +6,21 @@ const gameOverEl = document.querySelector('#gameOver');
 const c = canvas.getContext('2d');
 
 let projectileAudio = new Audio('../Audio/laser.wav');
+projectileAudio.volume = 0.1;
 
 let invaderProjectileAudio = new Audio('../Audio/laser2.wav');
+invaderProjectileAudio.volume = 0.1;
 
 let playerExplosionAudio = new Audio('../Audio/laser3.wav');
+playerExplosionAudio.volume = 0.5;
+
+let bombExplosionAudio = new Audio('../Audio/laser4.wav');
+
+let invaderExplosionAudio = new Audio('./Audio/explosion.wav');
+invaderExplosionAudio.volume = 0.1;
 
 canvas.width = 1000;
 canvas.height = 1000;
-
-
 
 // **!Player**
 class Player {
@@ -28,7 +34,6 @@ class Player {
 
         this.rotation = 0;
         this.opacity = 1;
-
 
         const image = new Image();
         image.src = './img/spaceship.png';
@@ -44,8 +49,6 @@ class Player {
             
             }
         }
-
-
     }
 
     draw() {
@@ -56,7 +59,6 @@ class Player {
         c.globalAlpha = this.opacity; // Use the corrected "opacity"
         c.translate(player.position.x + player.width / 2,
                     player.position.y + player.height / 2);
-
 
         c.rotate(this.rotation);
         c.translate(-player.position.x - player.width / 2,
@@ -76,9 +78,7 @@ class Player {
             this.draw();
             this.position.x += this.velocity.x;
         }
-
     }
-
 }
 
 // calss Projectile
@@ -203,8 +203,6 @@ class Invader {
         const image = new Image();
         image.src = './img/invader.png';
 
-    
-
         image.onload = () => {
             const scale = 1.3;
             this.image = image;
@@ -216,8 +214,6 @@ class Invader {
             
             }
         }
-
-
     }
 
     draw() {
@@ -231,7 +227,6 @@ class Invader {
             this.position.y,
             this.width,
             this.height);
-    
     }
 
     update({velocity}){
@@ -240,7 +235,6 @@ class Invader {
             this.position.x += velocity.x;
             this.position.y += velocity.y;
         }
-
     }
 
     shoot(InvaderProjectiles) {
@@ -259,7 +253,6 @@ class Invader {
             }
         }));
     }
-
 }
 
 // Bomb class
@@ -342,12 +335,8 @@ class Grid {
             this.velocity.y = 30;
 
         } 
-
-        
     }
 }
-
-//**!Enemy Class Bomb */
 
 const player = new Player();
 const projectiles = [];
@@ -383,7 +372,6 @@ const keys = {
     space: {
         pressed: false
     }
-    
 }
 
 let frames = 0;
@@ -468,12 +456,7 @@ function animate() {
             if (particle.position.y - particle.radius >= canvas.height) {
                 particle.position.x = Math.random() * canvas.width;
                 particle.position.y = -particle.radius;
-
-
             }
-
-
-
 
         if (particle.opacity <= 0) {
             setTimeout(() => {
@@ -499,8 +482,6 @@ function animate() {
             }, 0);
         }
     });
-
-    
 
     InvaderProjectiles.forEach((invaderProjectile, index) => {
         invaderProjectile.update();
@@ -553,8 +534,6 @@ function animate() {
             grid.invaders.length)].shoot(InvaderProjectiles);  
         }
 
-
-
     grid.invaders.forEach((invader, i) => {
         invader.update({velocity: grid.velocity})
 
@@ -570,9 +549,6 @@ function animate() {
                 invader.position.y
                 ){
 
-                    
-
-
                     setTimeout(() => {
                         const invaderFound = grid.invaders.find(
                             (invader2) => invader2 === invader
@@ -585,6 +561,10 @@ function animate() {
                             // score
                             score += 100;
                             scoreEl.innerHTML = score;
+
+                            // Play invader explosion audio
+                            invaderExplosionAudio.currentTime = 0;
+                            invaderExplosionAudio.play();
 
                             // create particles
                           createParticles({
@@ -602,19 +582,12 @@ function animate() {
                             } else {
                                 grids.splice(gridIndex, 1);
                             }
-
-
                         }
                     }
                     , 0)
-
-
-
-                      
             }
          })
       })
-    
     });
 
     // Update and draw bombs
@@ -637,8 +610,8 @@ function animate() {
             if (distance < bomb.radius + projectile.radius) {
                 // Bomb hit by projectile: big invader-like explosion with glow
                 createParticles({ object: bomb, color: 'orange', fades: true, glow: true, count: 40, maxRadius: 10 });
-                playerExplosionAudio.currentTime = 0;
-                playerExplosionAudio.play();
+                bombExplosionAudio.currentTime = 0;
+                bombExplosionAudio.play();
                 // Add 500 points to score
                 score += 500;
                 scoreEl.innerHTML = score;
