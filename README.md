@@ -40,4 +40,4 @@ A modern browser-based remake of the classic Space Invaders game, built with Jav
 2. Open `index.html` in your browser.
 3. Press "Start Game" and enjoy!
 
----
+----
